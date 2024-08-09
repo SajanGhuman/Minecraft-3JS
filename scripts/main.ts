@@ -3,6 +3,7 @@ import { OrbitControls } from "@three-ts/orbit-controls";
 import { World } from "./world";
 import Stats from "three/examples/jsm/libs/stats.module.js";
 import { createUI } from "./ui";
+import { Player } from "./player";
 
 const stats = new Stats();
 document.body.append(stats.dom);
@@ -12,6 +13,8 @@ const renderer = new THREE.WebGLRenderer();
 renderer.setPixelRatio(devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setClearColor(0x80a0e0);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
 //camera setup
@@ -33,15 +36,23 @@ const world = new World();
 world.generate();
 scene.add(world);
 
+const player = new Player(scene);
+
 //setup lights
 function setupLights() {
-  const light1 = new THREE.DirectionalLight();
-  light1.position.set(-1, 1, -0.5);
-  scene.add(light1);
-
-  const light2 = new THREE.DirectionalLight();
-  light2.position.set(1, 1, 1);
-  scene.add(light2);
+  const sun = new THREE.DirectionalLight();
+  sun.position.set(50, 50, 50);
+  sun.castShadow = true;
+  const shadowHelper = new THREE.CameraHelper(sun.shadow.camera);
+  sun.shadow.camera.left = -40;
+  sun.shadow.camera.right = 40;
+  sun.shadow.camera.bottom = -40;
+  sun.shadow.camera.top = 40;
+  sun.shadow.camera.near = 0.1;
+  sun.shadow.camera.far = 200;
+  sun.shadow.bias = -0.0005;
+  sun.shadow.mapSize = new THREE.Vector2(512, 512);
+  scene.add(sun);
 
   const ambient = new THREE.AmbientLight();
   ambient.intensity = 0.1;
@@ -51,9 +62,7 @@ function setupLights() {
 // render loop
 function animate() {
   requestAnimationFrame(animate);
-  // cube.rotation.x += 0.01;
-  // cube.rotation.y += 0.01;
-  renderer.render(scene, camera);
+  renderer.render(scene, player.camera);
   stats.update();
 }
 
