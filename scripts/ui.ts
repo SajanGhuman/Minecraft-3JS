@@ -1,9 +1,14 @@
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 import { World } from "./world";
 import { resources } from "./blocks";
+import { Player } from "./player";
 
-export function createUI(world: World) {
+export function createUI(world: World, player: Player) {
   const gui = new GUI();
+
+  const playerFolder = gui.addFolder("Player");
+  playerFolder.add(player, "maxSpeed", 1, 20).name("Max Speed");
+  playerFolder.add(player.cameraHelper, "visible").name("Show Camera Helper");
 
   gui.add(world.size, "width", 8, 128, 1).name("Width");
   gui.add(world.size, "height", 8, 128, 1).name("Height");
