@@ -1,5 +1,5 @@
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
-import { World } from "./world";
+import { World } from "./worldChunk";
 import { resources } from "./blocks";
 import { Player } from "./player";
 
@@ -10,10 +10,9 @@ export function createUI(world: World, player: Player) {
   playerFolder.add(player, "maxSpeed", 1, 20).name("Max Speed");
   playerFolder.add(player.cameraHelper, "visible").name("Show Camera Helper");
 
-  gui.add(world.size, "width", 8, 128, 1).name("Width");
-  gui.add(world.size, "height", 8, 128, 1).name("Height");
-
   const terrainFolder = gui.addFolder("Terrain");
+  terrainFolder.add(world.chunkSize, "width", 8, 128, 1).name("Width");
+  terrainFolder.add(world.chunkSize, "height", 8, 128, 1).name("Height");
   terrainFolder.add(world.params, "seed", 0, 10000).name("Seed");
   terrainFolder.add(world.params.terrain, "scale", 10, 100).name("Scale");
   terrainFolder.add(world.params.terrain, "magnitude", 0, 1).name("Magnitude");
