@@ -5,6 +5,7 @@ import Stats from "three/examples/jsm/libs/stats.module.js";
 import { createUI } from "./ui";
 import { Player } from "./player";
 import { Physics } from "./physics";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 const stats = new Stats();
 document.body.append(stats.dom);
@@ -33,28 +34,49 @@ controls.update();
 
 //scene setup
 const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x80a0e0, 10, 100);
 const world = new World();
 world.generate();
 scene.add(world);
+
+//villager
+const loader = new GLTFLoader();
+
+loader.load(
+  "minecraft_-_villager/scene.gltf",
+  function (gltf) {
+    const model = gltf.scene;
+    scene.add(model);
+    model.position.set(0, 2.3, 0); // x, y, z position
+
+    // Scale the model
+    model.scale.set(0.06, 0.06, 0.06);
+  },
+  undefined,
+  function (error) {
+    console.error(error);
+  },
+);
 
 const player = new Player(scene);
 
 const physics = new Physics(scene);
 
+const sun = new THREE.DirectionalLight();
 //setup lights
 function setupLights() {
-  const sun = new THREE.DirectionalLight();
   sun.position.set(50, 50, 50);
   sun.castShadow = true;
-  sun.shadow.camera.left = -40;
-  sun.shadow.camera.right = 40;
-  sun.shadow.camera.bottom = -40;
-  sun.shadow.camera.top = 40;
+  sun.shadow.camera.left = -100;
+  sun.shadow.camera.right = 100;
+  sun.shadow.camera.bottom = -100;
+  sun.shadow.camera.top = 100;
   sun.shadow.camera.near = 0.1;
   sun.shadow.camera.far = 200;
-  sun.shadow.bias = -0.0005;
-  sun.shadow.mapSize = new THREE.Vector2(512, 512);
+  sun.shadow.bias = -0.0001;
+  sun.shadow.mapSize = new THREE.Vector2(2048, 2048);
   scene.add(sun);
+  scene.add(sun.target);
 
   const ambient = new THREE.AmbientLight();
   ambient.intensity = 0.1;
@@ -68,7 +90,14 @@ function animate() {
   let dt = (currentTime - previousTime) / 1000;
 
   requestAnimationFrame(animate);
-  physics.update(dt, player, world);
+  if (player.controls.isLocked) {
+    physics.update(dt, player, world);
+    world.update(player);
+    sun.position.copy(player.position);
+    sun.position.sub(new THREE.Vector3(-50, -50, -50));
+    sun.target.position.copy(player.position);
+  }
+
   renderer.render(
     scene,
     player.controls.isLocked ? player.camera : orbitCamera,
@@ -86,5 +115,5 @@ window.addEventListener("resize", () => {
 });
 
 setupLights();
-createUI(world, player);
+createUI(scene, world, player);
 animate();
