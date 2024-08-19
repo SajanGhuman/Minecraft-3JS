@@ -6,8 +6,6 @@ import { createUI } from "./ui";
 import { Player } from "./player";
 import { Physics } from "./physics";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { document } from "postcss";
-import { getResponse } from "./ai";
 
 const stats = new Stats();
 document.body.append(stats.dom);
