@@ -3,9 +3,9 @@
     "typeRoots": [
       "./node_modules/@types",
       "./types"
-    ]
+    ],
+    "target": "ES6"
   },
-  "target": "ES6",
   "lib": [
     "ES6",
     "dom"

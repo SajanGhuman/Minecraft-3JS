@@ -20,6 +20,9 @@ export class Player {
   controls = new PointerLockControls(this.camera, document.body);
   cameraHelper = new THREE.CameraHelper(this.camera);
 
+  villagerPosition = new THREE.Vector3(20, 2.3, 15); // Define villager position
+  isNearVillager = false; // Track if the player is near the villager
+
   constructor(scene: THREE.Scene) {
     this.camera.position.set(20, 16, 20);
     scene.add(this.camera);
@@ -48,7 +51,7 @@ export class Player {
     this.velocity.add(dv);
   }
 
-  applyInputs(dt) {
+  applyInputs(dt: number) {
     if (this.controls.isLocked) {
       this.velocity.x = this.input.x;
       this.velocity.z = this.input.z;
@@ -56,7 +59,13 @@ export class Player {
       this.controls.moveForward(this.velocity.z * dt);
       this.position.y += this.velocity.y * dt;
 
-      document.getElementById("player-position").innerHTML = this.toString();
+      document.getElementById("player-position")!.innerHTML = this.toString();
+
+      // Check if the player is near the villager
+      this.isNearVillager = this.isPlayerNearVillager(
+        this.position,
+        this.villagerPosition,
+      );
     }
   }
 
@@ -70,6 +79,13 @@ export class Player {
   }
 
   onKeyDown(event: KeyboardEvent) {
+    const chatForm = document.getElementById("chat-form");
+
+    if (chatForm && chatForm.style.display === "block") {
+      // Do nothing if chatbox is visible
+      return;
+    }
+
     if (!this.controls.isLocked) {
       this.controls.lock();
     }
@@ -93,8 +109,16 @@ export class Player {
         if (this.onGround) {
           this.velocity.y += this.jumpSpeed;
         }
+        break;
+      case "KeyF":
+        // Trigger the action if near the villager
+        if (this.isNearVillager) {
+          this.talkToVillager();
+        }
+        break;
     }
   }
+
   onKeyUp(event: KeyboardEvent) {
     switch (event.code) {
       case "KeyW":
@@ -111,11 +135,27 @@ export class Player {
         break;
     }
   }
+
   toString() {
-    let str = "";
-    str += `X: ${this.position.x.toFixed(3)} `;
-    str += `Y: ${this.position.y.toFixed(3)} `;
-    str += `Z: ${this.position.z.toFixed(3)}`;
-    return str;
+    return `X: ${this.position.x.toFixed(3)} Y: ${this.position.y.toFixed(3)} Z: ${this.position.z.toFixed(3)}`;
+  }
+
+  isPlayerNearVillager(
+    playerPosition: THREE.Vector3,
+    villagerPosition: THREE.Vector3,
+    threshold: number = 7, // Increased proximity
+  ): boolean {
+    const distance = playerPosition.distanceTo(villagerPosition);
+    return distance <= threshold;
+  }
+
+  talkToVillager() {
+    const chatForm = document.getElementById("chat-form");
+    if (chatForm) {
+      chatForm.style.display =
+        chatForm.style.display === "none" || chatForm.style.display === ""
+          ? "block"
+          : "none";
+    }
   }
 }

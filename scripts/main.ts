@@ -6,6 +6,8 @@ import { createUI } from "./ui";
 import { Player } from "./player";
 import { Physics } from "./physics";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { document } from "postcss";
+import { getResponse } from "./ai";
 
 const stats = new Stats();
 document.body.append(stats.dom);
@@ -47,10 +49,26 @@ loader.load(
   function (gltf) {
     const model = gltf.scene;
     scene.add(model);
-    model.position.set(0, 2.3, 0); // x, y, z position
+    model.position.set(20, 2.3, 15); // x, y, z position
 
     // Scale the model
     model.scale.set(0.06, 0.06, 0.06);
+  },
+  undefined,
+  function (error) {
+    console.error(error);
+  },
+);
+
+loader.load(
+  "../public/untitled.glb",
+  function (gltf) {
+    const model = gltf.scene;
+    scene.add(model);
+    model.position.set(21, 0.4, 15); // x, y, z position
+
+    // Scale the model
+    model.scale.set(2, 2, 2);
   },
   undefined,
   function (error) {
@@ -83,6 +101,29 @@ function setupLights() {
   scene.add(ambient);
 }
 
+// Chat interaction logic
+let chatForm = document.getElementById("chat-form") as HTMLFormElement;
+let chatInput = document.getElementById("chat") as HTMLTextAreaElement;
+let followText = document.getElementById("follow-text");
+
+if (chatForm) {
+  chatForm.addEventListener("submit", async (e: Event) => {
+    e.preventDefault();
+
+    // Fetch response from the villager AI
+    const question = chatInput.value;
+    const response = await getResponse(question);
+    console.log(response);
+
+    // Display the villager's response
+    if (followText) {
+      followText.textContent = response;
+    }
+
+    // Clear the input field
+    chatInput.value = "";
+  });
+}
 // render loop
 let previousTime = performance.now();
 function animate() {
